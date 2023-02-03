@@ -81,3 +81,78 @@ app.get("/todos/", async (request, response) => {
   console.log(toDoArray);
   response.send(toDoArray);
 });
+
+//API2
+
+app.get("/todos/:todoId/", async (request, response) => {
+  const { todoId } = request.params;
+  const gettoDOById = `
+        SELECT * FROM todo
+        WHERE id=${todoId};`;
+  const todo = await db.get(gettoDOById);
+  response.send(todo);
+});
+
+//API3
+app.post("/todos/", async (request, response) => {
+  const todoDetails = request.body;
+  const { id, todo, priority, status } = todoDetails;
+  const addToDoQuery = `
+        INSERT INTO todo
+        (id,todo,priority,status)
+        VALUES 
+        (${id},'${todo}','${priority}','${status}');`;
+  await db.run(addToDoQuery);
+  response.send("Todo Successfully Added");
+});
+
+//API4
+
+app.put("/todos/:todoId/", async (request, response) => {
+  const { todoId } = request.params;
+  const requestBody = request.body;
+  let updatedColumn = "";
+  switch (true) {
+    case requestBody.status !== undefined:
+      updatedColumn = "Status";
+      break;
+    case requestBody.priority !== undefined:
+      updatedColumn = "Priority";
+      break;
+    case requestBody.todo !== undefined:
+      updatedColumn = "Todo";
+      break;
+    default:
+      console.log("No Field updated");
+      break;
+  }
+  const todoDetailtobeUpdatedQuery = `
+    SELECT * FROM todo
+    WHERE id=${todoId};`;
+  const todoDetail = await db.get(todoDetailtobeUpdatedQuery);
+  console.log(todoDetail);
+  const {
+    id = todoDetail.id,
+    todo = todoDetail.todo,
+    priority = todoDetail.priority,
+    status = todoDetail.status,
+  } = requestBody;
+  const updateDetailsQuery = `
+        UPDATE todo
+        SET todo='${todo}',
+            priority='${priority}',
+            status='${status}';`;
+  await db.run(updateDetailsQuery);
+  response.send(`${updatedColumn} Updated`);
+});
+
+app.delete("/todos/:todoId/", async (request, response) => {
+  const { todoId } = request.params;
+  const deleteToDoQuery = `
+        DELETE FROM todo
+        WHERE id=${todoId};`;
+  await db.run(deleteToDoQuery);
+  response.send("Todo Deleted");
+});
+
+module.exports = app;
