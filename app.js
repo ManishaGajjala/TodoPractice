@@ -30,7 +30,7 @@ const convertCase = (obj) => {
 };
 
 const hasPriorityAndStatusProperty = (requestQuery) => {
-  console.log(requestQuery);
+  //console.log(requestQuery);
   return (
     requestQuery.priority !== undefined && requestQuery.status !== undefined
   );
@@ -39,15 +39,17 @@ const hasPriorityProperty = (requestQuery) => {
   return requestQuery.priority !== undefined;
 };
 const hasStatusProperty = (requestQuery) => {
-  return requestQuery.status == !undefined;
+  //console.log(requestQuery);
+  return requestQuery.status !== undefined;
 };
 
 app.get("/todos/", async (request, response) => {
   const { status, priority, search_q = "" } = request.query;
-  console.log(status);
-  console.log(priority);
+  //console.log(status);
+  //console.log(priority);
   let getToDoQuery = " ";
   let todoArray = " ";
+  console.log(hasStatusProperty(request.query));
   switch (true) {
     case hasPriorityAndStatusProperty(request.query):
       getToDoQuery = `
@@ -61,17 +63,21 @@ app.get("/todos/", async (request, response) => {
                 WHERE priority='${priority}';`;
       break;
     case hasStatusProperty(request.query):
+      console.log(hasStatusProperty(request.query));
       getToDoQuery = `
                 SELECT * FROM todo 
                 WHERE status='${status}';`;
+      //console.log(getToDoQuery);
       break;
     default:
+      console.log("default");
       getToDoQuery = `
                 SELECT * FROM todo 
                 WHERE todo LIKE '%${search_q}%';`;
+      console.log(getToDoQuery);
       break;
   }
-  toDoArray = await db.all(getToDOQuery);
+  toDoArray = await db.all(getToDoQuery);
   console.log(toDoArray);
   response.send(toDoArray);
 });
